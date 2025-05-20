@@ -3,7 +3,7 @@ from tkinter import ttk
 from datetime import datetime
 from views.incluir_gastos_view import IncluirGastosView
 from views.relatorio_gastos_view import RelatorioGastosView
-
+from views.setar_valor_view import SetarValorView
 import locale
 
 try:
@@ -42,6 +42,9 @@ class AppView:
         self.btn_relatorio = ttk.Button(frame, text="Ver Relatório de Gastos", width=30, command=self.abrir_relatorio_gastos_view)
         self.btn_relatorio.pack(pady=10)
 
+        self.btn_relatorio = ttk.Button(frame, text="Inserir Limite para Gasto", width=30, command=self.abrir_setar_valor_view)
+        self.btn_relatorio.pack(pady=10)
+
     def abrir_incluir_gastos_view(self):
         for widget in self.root.winfo_children():
             widget.destroy()
@@ -54,3 +57,9 @@ class AppView:
             widget.destroy()
         
         RelatorioGastosView(self.root, self.mostrar_tela_principal)
+
+    def abrir_setar_valor_view(self):
+        for widget in self.root.winfo_children():
+            widget.destroy()
+        
+        SetarValorView(self.root, self.mostrar_tela_principal)
