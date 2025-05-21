@@ -10,3 +10,6 @@ def adicionar_gasto(valor, descricao, categoria):
     if not descricao or not categoria:
         raise ValueError("Descrição e categoria são obrigatórias")
     return gasto_model.inserir_gasto(valor, descricao, categoria)
+
+def buscar_gastos_por_mes(mes):
+    return gasto_model.buscar_por_mes(mes)

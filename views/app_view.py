@@ -1,9 +1,13 @@
 import tkinter as tk
 from tkinter import ttk
 from datetime import datetime
+
 from views.incluir_gastos_view import IncluirGastosView
 from views.relatorio_gastos_view import RelatorioGastosView
 from views.setar_valor_view import SetarValorView
+
+from controllers import limites_controller
+
 import locale
 
 try:
@@ -15,7 +19,7 @@ class AppView:
     def __init__(self, root):
         self.root = root
         root.title("Calculadora Financeira")
-        root.geometry("500x450")
+        self.centralizar_janela()
         root.resizable(False, False)
 
         self.mostrar_tela_principal()
@@ -30,7 +34,9 @@ class AppView:
 
         mes_atual = datetime.now().strftime("%B").capitalize()
 
-        self.saldo_label = ttk.Label(self.root, text=f"Saldo Atual ({mes_atual}): R$ 00,00", anchor="e", font=("Arial", 10, "bold"))
+        saldo = limites_controller.obter_saldo_atual()
+        cor_saldo = "green" if saldo >= 0 else "red"
+        self.saldo_label = ttk.Label(self.root, text=f"Saldo Atual ({mes_atual}): R$ {saldo:.2f}", anchor="e", font=("Arial", 10, "bold"), foreground= cor_saldo)
         self.saldo_label.place(relx=1.0, x=-10, y=10, anchor="ne")
 
         titulo = ttk.Label(frame, text="Menu Principal", font=("Arial", 16, "bold"))
@@ -63,3 +69,14 @@ class AppView:
             widget.destroy()
         
         SetarValorView(self.root, self.mostrar_tela_principal)
+
+    def centralizar_janela(self, largura=600, altura=550):
+        # pega a largura e altura da tela
+        largura_tela = self.root.winfo_screenwidth()
+        altura_tela = self.root.winfo_screenheight()
+
+        # calcula a posição x e y para centralizar
+        x = (largura_tela // 2) - (largura // 2)
+        y = (altura_tela // 2) - (altura // 2)
+
+        self.root.geometry(f"{largura}x{altura}+{x}+{y}")

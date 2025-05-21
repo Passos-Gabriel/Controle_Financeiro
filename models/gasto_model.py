@@ -19,4 +19,8 @@ def deletar_gasto(gasto_id):
     response = supabase.table("gastos").delete().eq("id", gasto_id).execute()
     return response.data
 
+def buscar_por_mes(mes):
+    resposta = supabase.table("gastos").select("*").eq("mes_referencia", mes).order("id", desc=True).execute()
+    return resposta.data if resposta.data else []
+
 # Outros métodos que precisar, tipo atualizar, buscar por id, etc.

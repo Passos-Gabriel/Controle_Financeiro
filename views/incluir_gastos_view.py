@@ -2,6 +2,9 @@ from tkinter import ttk
 import tkinter as tk
 from tkinter import messagebox
 import controllers.gasto_controller as gasto
+from datetime import datetime
+
+mes_atual = datetime.now().strftime("%B").capitalize()
 
 class IncluirGastosView:
     def __init__(self, root, voltar_callback):
@@ -44,6 +47,65 @@ class IncluirGastosView:
         btn_salvar = ttk.Button(self.frame, text="Salvar Gasto", command=self.salvar_gasto)
         btn_salvar.pack()
 
+        # Label da tabela
+        ttk.Label(self.frame, text="Gastos do mês atual:", font=("Arial", 12, "bold")).pack(anchor="w", pady=(10, 5))
+
+        # Frame para agrupar Treeview e Scrollbar
+        tabela_frame = ttk.Frame(self.frame)
+        tabela_frame.pack(fill="both", expand=True)
+
+        # Scrollbar vertical
+        scrollbar = ttk.Scrollbar(tabela_frame, orient="vertical")
+        scrollbar.pack(side="right", fill="y")
+
+        # Tabela (Treeview)
+        self.tabela = ttk.Treeview(
+            tabela_frame,
+            columns=("data", "descricao", "categoria", "valor"),
+            show="headings",
+            height=6,
+            yscrollcommand=scrollbar.set
+        )
+
+        # Configura Scrollbar
+        scrollbar.config(command=self.tabela.yview)
+
+        # Cabeçalhos
+        self.tabela.heading("data", text="Data")
+        self.tabela.heading("descricao", text="Descrição")
+        self.tabela.heading("categoria", text="Categoria")
+        self.tabela.heading("valor", text="Valor (R$)")
+
+        # Largura das colunas
+        self.tabela.column("data", width=90)
+        self.tabela.column("descricao", width=150)
+        self.tabela.column("categoria", width=100)
+        self.tabela.column("valor", width=80)
+
+        # Posiciona a tabela
+        self.tabela.pack(side="left", fill="both", expand=True)
+        self.label_total = ttk.Label(self.frame, text=f"Total dos Gastos de {mes_atual}: R$ 0.00", font=("Arial", 12, "bold"))
+        self.label_total.pack(anchor="e", pady=(10, 0))
+
+        # Preenche a tabela com dados do mês atual
+        self.carregar_gastos_mes()
+
+    def carregar_gastos_mes(self):
+        for item in self.tabela.get_children():
+            self.tabela.delete(item)
+
+        mes_atual = datetime.now().strftime("%B").capitalize()
+        gastos = gasto.buscar_gastos_por_mes(mes_atual)
+
+        total = 0.0
+        for g in gastos:
+            data = g.get("data", "")[:10]  # Pegando só a data (AAAA-MM-DD)
+            self.tabela.insert("", "end", values=(data, g["descricao"], g["categoria"], f"{g['valor']:.2f}"))
+            total += float(g["valor"])
+
+         # Atualiza a label total
+        self.label_total.config(text=f"Total dos Gastos de {mes_atual}: R$ {total:.2f}")
+
     def salvar_gasto(self):
         descricao = self.entry_descricao.get().strip()
         categoria = self.valor_proposito.get().strip()
@@ -66,6 +128,12 @@ class IncluirGastosView:
 
         if resultado.data:  # Se há dados, a inserção foi bem-sucedida
             messagebox.showinfo("Sucesso", "Gasto salvo com sucesso!")
+            self.entry_valor.delete(0, tk.END)
+            self.entry_descricao.delete(0, tk.END)
+            self.valor_proposito.set("Selecione...")
+
+            # Atualiza a tabela
+            self.carregar_gastos_mes()
         else:
             messagebox.showerror("Erro", "Falha ao salvar o gasto.")
 
