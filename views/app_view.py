@@ -15,7 +15,7 @@ class AppView:
     def __init__(self, root):
         self.root = root
         root.title("Calculadora Financeira")
-        root.geometry("400x300")
+        root.geometry("500x450")
         root.resizable(False, False)
 
         self.mostrar_tela_principal()
