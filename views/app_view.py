@@ -70,7 +70,7 @@ class AppView:
         
         SetarValorView(self.root, self.mostrar_tela_principal)
 
-    def centralizar_janela(self, largura=600, altura=550):
+    def centralizar_janela(self, largura=650, altura=550):
         # pega a largura e altura da tela
         largura_tela = self.root.winfo_screenwidth()
         altura_tela = self.root.winfo_screenheight()
