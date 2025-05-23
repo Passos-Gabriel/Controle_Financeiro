@@ -1,7 +1,10 @@
 from tkinter import ttk
 import tkinter as tk
 from datetime import datetime
+from tkinter import messagebox, filedialog
+import csv
 import controllers.gasto_controller as gasto_controller
+from tkcalendar import DateEntry
 
 class RelatorioGastosView:
     def __init__(self, root, voltar_callback):
@@ -53,6 +56,10 @@ class RelatorioGastosView:
         # Botão Filtrar
         btn_filtrar = ttk.Button(filtros_frame, text="Filtrar", command=self.filtrar_gastos)
         btn_filtrar.grid(row=1, column=4, padx=10, pady=(10, 0))
+
+        # Botão Exportar CSV
+        btn_exportar = ttk.Button(filtros_frame, text="Exportar CSV", command=self.exportar_csv)
+        btn_exportar.grid(row=1, column=5, padx=10, pady=(10, 0))
 
         # Tabela com scrollbar
         self.tabela_frame = ttk.Frame(self.frame)
@@ -124,3 +131,57 @@ class RelatorioGastosView:
         data_fim = self.data_fim_var.get().strip() or None
 
         self.carregar_gastos(mes, categoria, data_inicio, data_fim)
+
+    def exportar_csv(self):
+        mes = self.mes_var.get()
+        categoria = self.categoria_var.get()
+        data_inicio = self.data_inicio_var.get().strip() or None
+        data_fim = self.data_fim_var.get().strip() or None
+
+        # Recarrega os dados com base nos filtros
+        gastos = gasto_controller.buscar_gastos_por_mes(mes)
+        gastos_filtrados = []
+
+        for g in gastos:
+            if categoria != "Todas" and g["categoria"] != categoria:
+                continue
+
+            data_gasto = g.get("data", "")[:10]
+            if data_inicio and data_gasto < data_inicio:
+                continue
+            if data_fim and data_gasto > data_fim:
+                continue
+
+            gastos_filtrados.append({
+                "Descrição": g["descricao"],
+                "Categoria": g["categoria"],
+                "Valor (R$)": f"{g['valor']:.2f}",
+                "Data": data_gasto
+            })
+
+        if not gastos_filtrados:
+            messagebox.showinfo("Exportar CSV", "Não há dados para exportar com os filtros atuais.")
+            return
+
+        # Sugestão de nome de arquivo
+        nome_arquivo = f"relatorio_{mes.lower()}_{categoria.lower() if categoria != 'Todas' else 'todas'}.csv"
+
+        # Escolha do caminho para salvar
+        caminho = filedialog.asksaveasfilename(
+            defaultextension=".csv",
+            filetypes=[("Arquivos CSV", "*.csv")],
+            initialfile=nome_arquivo
+        )
+
+        if not caminho:
+            return
+
+        try:
+            with open(caminho, mode='w', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(f, fieldnames=["Descrição", "Categoria", "Valor (R$)", "Data"])
+                writer.writeheader()
+                writer.writerows(gastos_filtrados)
+
+            messagebox.showinfo("Exportar CSV", f"Relatório exportado com sucesso para:\n{caminho}")
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao exportar CSV:\n{str(e)}")
