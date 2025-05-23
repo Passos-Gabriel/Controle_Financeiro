@@ -4,7 +4,6 @@ from datetime import datetime
 from tkinter import messagebox, filedialog
 import csv
 import controllers.gasto_controller as gasto_controller
-from tkcalendar import DateEntry
 
 class RelatorioGastosView:
     def __init__(self, root, voltar_callback):
