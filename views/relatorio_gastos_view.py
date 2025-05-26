@@ -1,7 +1,7 @@
 from tkinter import ttk
 import tkinter as tk
 from datetime import datetime
-from tkinter import messagebox, filedialog
+from tkinter import filedialog
 import csv
 import controllers.gasto_controller as gasto_controller
 
@@ -64,11 +64,9 @@ class RelatorioGastosView:
         self.tabela_frame = ttk.Frame(self.frame)
         self.tabela_frame.pack(fill="both", expand=True)
 
-        # Scrollbar vertical
         self.scrollbar = ttk.Scrollbar(self.tabela_frame, orient="vertical")
         self.scrollbar.pack(side="right", fill="y")
 
-        # Treeview
         self.tabela = ttk.Treeview(
             self.tabela_frame,
             columns=("descricao", "categoria", "valor", "data"),
@@ -76,8 +74,6 @@ class RelatorioGastosView:
             yscrollcommand=self.scrollbar.set
         )
         self.tabela.pack(fill="both", expand=True)
-
-        # Link scrollbar à Treeview
         self.scrollbar.config(command=self.tabela.yview)
 
         self.tabela.heading("descricao", text="Descrição")
@@ -90,7 +86,6 @@ class RelatorioGastosView:
         self.tabela.column("valor", width=80)
         self.tabela.column("data", width=100)
 
-        # Total
         self.total_label = ttk.Label(self.frame, text="Total: R$ 0.00", font=("Arial", 12, "bold"))
         self.total_label.pack(anchor="e", pady=(10, 0))
 
@@ -101,7 +96,6 @@ class RelatorioGastosView:
             self.tabela.delete(item)
 
         gastos = gasto_controller.buscar_gastos_por_mes(mes)
-
         total = 0.0
         for g in gastos:
             if categoria != "Todas" and g["categoria"] != categoria:
@@ -137,7 +131,6 @@ class RelatorioGastosView:
         data_inicio = self.data_inicio_var.get().strip() or None
         data_fim = self.data_fim_var.get().strip() or None
 
-        # Recarrega os dados com base nos filtros
         gastos = gasto_controller.buscar_gastos_por_mes(mes)
         gastos_filtrados = []
 
@@ -159,13 +152,11 @@ class RelatorioGastosView:
             })
 
         if not gastos_filtrados:
-            messagebox.showinfo("Exportar CSV", "Não há dados para exportar com os filtros atuais.")
+            exibir_popup("Exportar CSV", "Não há dados para exportar com os filtros atuais.", tipo="info")
             return
 
-        # Sugestão de nome de arquivo
         nome_arquivo = f"relatorio_{mes.lower()}_{categoria.lower() if categoria != 'Todas' else 'todas'}.csv"
 
-        # Escolha do caminho para salvar
         caminho = filedialog.asksaveasfilename(
             defaultextension=".csv",
             filetypes=[("Arquivos CSV", "*.csv")],
@@ -181,6 +172,43 @@ class RelatorioGastosView:
                 writer.writeheader()
                 writer.writerows(gastos_filtrados)
 
-            messagebox.showinfo("Exportar CSV", f"Relatório exportado com sucesso para:\n{caminho}")
+            exibir_popup("Sucesso", f"Relatório exportado com sucesso para:\n{caminho}", tipo="sucesso")
         except Exception as e:
-            messagebox.showerror("Erro", f"Erro ao exportar CSV:\n{str(e)}")
+            exibir_popup("Erro", f"Erro ao exportar CSV:\n{str(e)}", tipo="erro")
+
+
+# Função auxiliar de pop-up
+def exibir_popup(titulo, mensagem, tipo="info"):
+    popup = tk.Toplevel()
+    popup.title(titulo)
+    popup.geometry("300x150")
+    popup.resizable(False, False)
+    popup.configure(bg="#f0f0f0")
+
+    # Centraliza o popup
+    popup.update_idletasks()
+    x = (popup.winfo_screenwidth() // 2) - (300 // 2)
+    y = (popup.winfo_screenheight() // 2) - (150 // 2)
+    popup.geometry(f"+{x}+{y}")
+
+    frame = ttk.Frame(popup, padding=20)
+    frame.pack(expand=True, fill="both")
+
+    icone = {
+        "info": "ℹ️",
+        "erro": "❌",
+        "sucesso": "✅"
+    }.get(tipo, "ℹ️")
+
+    lbl_titulo = ttk.Label(frame, text=f"{icone} {titulo}", font=("Arial", 12, "bold"))
+    lbl_titulo.pack(pady=(0, 10))
+
+    lbl_msg = ttk.Label(frame, text=mensagem, wraplength=260)
+    lbl_msg.pack(pady=(0, 20))
+
+    btn_ok = ttk.Button(frame, text="OK", command=popup.destroy)
+    btn_ok.pack()
+
+    popup.transient()
+    popup.grab_set()
+    popup.wait_window()

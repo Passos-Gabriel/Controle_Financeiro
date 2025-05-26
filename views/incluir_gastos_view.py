@@ -1,6 +1,5 @@
 from tkinter import ttk
 import tkinter as tk
-from tkinter import messagebox
 import controllers.gasto_controller as gasto
 from datetime import datetime
 
@@ -99,41 +98,72 @@ class IncluirGastosView:
 
         total = 0.0
         for g in gastos:
-            data = g.get("data", "")[:10]  # Pegando só a data (AAAA-MM-DD)
+            data = g.get("data", "")[:10]
             self.tabela.insert("", "end", values=(data, g["descricao"], g["categoria"], f"{g['valor']:.2f}"))
             total += float(g["valor"])
 
-         # Atualiza a label total
         self.label_total.config(text=f"Total dos Gastos de {mes_atual}: R$ {total:.2f}")
 
     def salvar_gasto(self):
         descricao = self.entry_descricao.get().strip()
         categoria = self.valor_proposito.get().strip()
 
-        # Valida número
         try:
             valor = float(self.entry_valor.get())
         except ValueError:
-            messagebox.showerror("Erro", "O campo 'Valor Gasto' deve ser um número válido.")
+            exibir_popup("Erro", "O campo 'Valor Gasto' deve ser um número válido.", tipo="erro")
             return
         
-        # Verifica campos obrigatórios
         if not valor or not descricao or categoria == "Selecione..." or not categoria:
-            messagebox.showerror("Erro", "Todos os campos são obrigatórios.")
+            exibir_popup("Erro", "Todos os campos são obrigatórios.", tipo="erro")
             return
 
-        # Se tudo ok, prossegue
         resultado = gasto.adicionar_gasto(valor, descricao, categoria)
 
-
-        if resultado.data:  # Se há dados, a inserção foi bem-sucedida
-            messagebox.showinfo("Sucesso", "Gasto salvo com sucesso!")
+        if resultado.data:
+            exibir_popup("Sucesso", "Gasto salvo com sucesso!", tipo="sucesso")
             self.entry_valor.delete(0, tk.END)
             self.entry_descricao.delete(0, tk.END)
             self.valor_proposito.set("Selecione...")
-
-            # Atualiza a tabela
             self.carregar_gastos_mes()
         else:
-            messagebox.showerror("Erro", "Falha ao salvar o gasto.")
+            exibir_popup("Erro", "Falha ao salvar o gasto.", tipo="erro")
 
+
+# Função auxiliar para mostrar pop-ups personalizados
+def exibir_popup(titulo, mensagem, tipo="info"):
+    popup = tk.Toplevel()
+    popup.title(titulo)
+    popup.geometry("300x150")
+    popup.resizable(False, False)
+    popup.configure(bg="#f0f0f0")
+
+    # Centraliza o popup
+    popup.update_idletasks()
+    x = (popup.winfo_screenwidth() // 2) - (300 // 2)
+    y = (popup.winfo_screenheight() // 2) - (150 // 2)
+    popup.geometry(f"+{x}+{y}")
+
+    # Frame principal
+    frame = ttk.Frame(popup, padding=20)
+    frame.pack(expand=True, fill="both")
+
+    # Ícone
+    icone = {
+        "info": "ℹ️",
+        "erro": "❌",
+        "sucesso": "✅"
+    }.get(tipo, "ℹ️")
+
+    lbl_titulo = ttk.Label(frame, text=f"{icone} {titulo}", font=("Arial", 12, "bold"))
+    lbl_titulo.pack(pady=(0, 10))
+
+    lbl_msg = ttk.Label(frame, text=mensagem, wraplength=260)
+    lbl_msg.pack(pady=(0, 20))
+
+    btn_ok = ttk.Button(frame, text="OK", command=popup.destroy)
+    btn_ok.pack()
+
+    popup.transient()
+    popup.grab_set()
+    popup.wait_window()
