@@ -18,7 +18,7 @@ class IncluirGastosView:
         self.btn_voltar.pack(anchor="w")
 
         # Título
-        titulo = ttk.Label(self.frame, text="Adicionar Gasto", font=("Arial", 16, "bold"))
+        titulo = ttk.Label(self.frame, text="Adicionar Registro", font=("Arial", 16, "bold"))
         titulo.pack(pady=(10, 20))
 
         # Campo: Valor Gasto
@@ -43,10 +43,10 @@ class IncluirGastosView:
         dropdown.pack(fill="x", pady=(0, 20))
 
         # Botão de salvar
-        btn_salvar = ttk.Button(self.frame, text="Salvar Gasto", command=self.salvar_gasto)
+        btn_salvar = ttk.Button(self.frame, text="Salvar Registro", command=self.salvar_gasto)
         btn_salvar.pack()
 
-        btn_apagar = ttk.Button(self.frame, text="🗑 Apagar Gasto Selecionado", command=self.apagar_gasto)
+        btn_apagar = ttk.Button(self.frame, text="🗑 Apagar Registro Selecionado", command=self.apagar_gasto)
         btn_apagar.pack(pady=(5, 10))
 
         # Label da tabela
