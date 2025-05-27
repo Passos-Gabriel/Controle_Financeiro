@@ -46,6 +46,9 @@ class IncluirGastosView:
         btn_salvar = ttk.Button(self.frame, text="Salvar Gasto", command=self.salvar_gasto)
         btn_salvar.pack()
 
+        btn_apagar = ttk.Button(self.frame, text="🗑 Apagar Gasto Selecionado", command=self.apagar_gasto)
+        btn_apagar.pack(pady=(5, 10))
+
         # Label da tabela
         ttk.Label(self.frame, text="Gastos do mês atual:", font=("Arial", 12, "bold")).pack(anchor="w", pady=(10, 5))
 
@@ -99,8 +102,12 @@ class IncluirGastosView:
         total = 0.0
         for g in gastos:
             data = g.get("data", "")[:10]
-            self.tabela.insert("", "end", values=(data, g["descricao"], g["categoria"], f"{g['valor']:.2f}"))
+            self.tabela.insert(
+                "", "end", iid=g["id"],  # <- usa o ID como identificador único
+                values=(data, g["descricao"], g["categoria"], f"{g['valor']:.2f}")
+            )
             total += float(g["valor"])
+
 
         self.label_total.config(text=f"Total dos Gastos de {mes_atual}: R$ {total:.2f}")
 
@@ -128,6 +135,23 @@ class IncluirGastosView:
             self.carregar_gastos_mes()
         else:
             exibir_popup("Erro", "Falha ao salvar o gasto.", tipo="erro")
+
+    def apagar_gasto(self):
+        item_selecionado = self.tabela.selection()
+        if not item_selecionado:
+            exibir_popup("Atenção", "Selecione um gasto para apagar.", tipo="info")
+            return
+
+        gasto_id = item_selecionado[0]  # o ID está como iid
+        confirmacao = tk.messagebox.askyesno("Confirmar", "Tem certeza que deseja apagar este gasto?")
+
+        if confirmacao:
+            resultado = gasto.deletar_gasto(gasto_id)
+            if resultado:
+                exibir_popup("Sucesso", "Gasto apagado com sucesso!", tipo="sucesso")
+                self.carregar_gastos_mes()
+            else:
+                exibir_popup("Erro", "Falha ao apagar o gasto.", tipo="erro")
 
 
 # Função auxiliar para mostrar pop-ups personalizados

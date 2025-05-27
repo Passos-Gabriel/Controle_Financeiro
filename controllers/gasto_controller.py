@@ -13,3 +13,6 @@ def adicionar_gasto(valor, descricao, categoria):
 
 def buscar_gastos_por_mes(mes):
     return gasto_model.buscar_por_mes(mes)
+
+def deletar_gasto(gasto_id):
+    return gasto_model.deletar_gasto(gasto_id)
