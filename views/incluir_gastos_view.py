@@ -44,8 +44,12 @@ class IncluirGastosView:
         dropdown.pack(fill="x", pady=(0, 20))
 
         # Botão de salvar
-        btn_salvar = ttk.Button(self.frame, text="Salvar Registro", command=self.salvar_gasto)
-        btn_salvar.pack()
+        self.btn_salvar = ttk.Button(self.frame, text="Salvar Registro", command=self.salvar_gasto)
+        self.btn_salvar.pack()
+
+        self.btn_cancelar_edicao = ttk.Button(self.frame, text="Cancelar Edição", command=self.cancelar_edicao)
+        self.btn_cancelar_edicao.pack(pady=(5, 10))
+        self.btn_cancelar_edicao.pack_forget()  # esconde inicialmente
 
         btn_apagar = ttk.Button(self.frame, text="🗑 Apagar Registro Selecionado", command=self.apagar_gasto)
         btn_apagar.pack(pady=(5, 10))
@@ -87,8 +91,16 @@ class IncluirGastosView:
 
         # Posiciona a tabela
         self.tabela.pack(side="left", fill="both", expand=True)
-        self.label_total = ttk.Label(self.frame, text=f"Total dos Gastos de {mes_atual}: R$ 0.00", font=("Arial", 12, "bold"))
-        self.label_total.pack(anchor="e", pady=(10, 0))
+        # Frame inferior com botão de cancelar e total
+        rodape_frame = ttk.Frame(self.frame)
+        rodape_frame.pack(fill="x", pady=(10, 0))
+
+        self.btn_cancelar_edicao = ttk.Button(rodape_frame, text="Cancelar Edição", command=self.cancelar_edicao)
+        self.btn_cancelar_edicao.pack(side="left")
+        self.btn_cancelar_edicao.pack_forget()  # escondido por padrão
+
+        self.label_total = ttk.Label(rodape_frame, text=f"Total dos Gastos de {mes_atual}: R$ 0.00", font=("Arial", 12, "bold"))
+        self.label_total.pack(side="right")
 
         # Preenche a tabela com dados do mês atual
         self.carregar_gastos_mes()
@@ -110,6 +122,17 @@ class IncluirGastosView:
         self.valor_proposito.set(categoria)
 
         self.gasto_em_edicao_id = gasto_id
+
+        self.btn_salvar.config(text="Salvar Edição")
+        self.btn_cancelar_edicao.pack()
+
+    def cancelar_edicao(self):
+        self.entry_valor.delete(0, tk.END)
+        self.entry_descricao.delete(0, tk.END)
+        self.valor_proposito.set("Selecione...")
+        self.gasto_em_edicao_id = None
+        self.btn_salvar.config(text="Salvar Registro")
+        self.btn_cancelar_edicao.pack_forget()
 
 
     def carregar_gastos_mes(self):
@@ -163,6 +186,14 @@ class IncluirGastosView:
         self.entry_valor.delete(0, tk.END)
         self.entry_descricao.delete(0, tk.END)
         self.valor_proposito.set("Selecione...")
+
+        self.entry_valor.delete(0, tk.END)
+        self.entry_descricao.delete(0, tk.END)
+        self.valor_proposito.set("Selecione...")
+        self.carregar_gastos_mes()
+
+        self.btn_salvar.config(text="Salvar Registro")
+        self.btn_cancelar_edicao.pack_forget()
         self.carregar_gastos_mes()
 
     def apagar_gasto(self):
