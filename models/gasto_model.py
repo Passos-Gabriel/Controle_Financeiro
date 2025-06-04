@@ -24,3 +24,11 @@ def buscar_por_mes(mes):
     return resposta.data if resposta.data else []
 
 # Outros métodos que precisar, tipo atualizar, buscar por id, etc.
+def atualizar_gasto(gasto_id, valor, descricao, categoria):
+    mes_atual = datetime.now().strftime("%B").capitalize()
+    return supabase.table("gastos").update({
+        "valor": valor,
+        "descricao": descricao,
+        "categoria": categoria,
+        "mes_referencia": mes_atual
+    }).eq("id", gasto_id).execute()

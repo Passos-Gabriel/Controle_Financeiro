@@ -16,3 +16,6 @@ def buscar_gastos_por_mes(mes):
 
 def deletar_gasto(gasto_id):
     return gasto_model.deletar_gasto(gasto_id)
+
+def atualizar_gasto(gasto_id, valor, descricao, categoria):
+    return gasto_model.atualizar_gasto(gasto_id, valor, descricao, categoria)

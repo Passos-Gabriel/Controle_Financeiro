@@ -9,6 +9,7 @@ class IncluirGastosView:
     def __init__(self, root, voltar_callback):
         self.root = root
         self.voltar_callback = voltar_callback
+        self.gasto_em_edicao_id = None  # Controla se está editando
 
         self.frame = ttk.Frame(root, padding=20)
         self.frame.pack(fill="both", expand=True)
@@ -91,6 +92,25 @@ class IncluirGastosView:
 
         # Preenche a tabela com dados do mês atual
         self.carregar_gastos_mes()
+        self.tabela.bind("<Double-1>", self.preencher_campos_para_edicao)
+
+    def preencher_campos_para_edicao(self, event):
+        item_selecionado = self.tabela.selection()
+        if not item_selecionado:
+            return
+
+        gasto_id = item_selecionado[0]
+        valores = self.tabela.item(gasto_id, "values")
+
+        data, descricao, categoria, valor = valores
+        self.entry_valor.delete(0, tk.END)
+        self.entry_valor.insert(0, valor)
+        self.entry_descricao.delete(0, tk.END)
+        self.entry_descricao.insert(0, descricao)
+        self.valor_proposito.set(categoria)
+
+        self.gasto_em_edicao_id = gasto_id
+
 
     def carregar_gastos_mes(self):
         for item in self.tabela.get_children():
@@ -120,21 +140,30 @@ class IncluirGastosView:
         except ValueError:
             exibir_popup("Erro", "O campo 'Valor Gasto' deve ser um número válido.", tipo="erro")
             return
-        
+
         if not valor or not descricao or categoria == "Selecione..." or not categoria:
             exibir_popup("Erro", "Todos os campos são obrigatórios.", tipo="erro")
             return
 
-        resultado = gasto.adicionar_gasto(valor, descricao, categoria)
-
-        if resultado.data:
-            exibir_popup("Sucesso", "Gasto salvo com sucesso!", tipo="sucesso")
-            self.entry_valor.delete(0, tk.END)
-            self.entry_descricao.delete(0, tk.END)
-            self.valor_proposito.set("Selecione...")
-            self.carregar_gastos_mes()
+        if self.gasto_em_edicao_id:
+            resultado = gasto.atualizar_gasto(self.gasto_em_edicao_id, valor, descricao, categoria)
+            if resultado.data:
+                exibir_popup("Sucesso", "Gasto atualizado com sucesso!", tipo="sucesso")
+            else:
+                exibir_popup("Erro", "Falha ao atualizar o gasto.", tipo="erro")
+            self.gasto_em_edicao_id = None
         else:
-            exibir_popup("Erro", "Falha ao salvar o gasto.", tipo="erro")
+            resultado = gasto.adicionar_gasto(valor, descricao, categoria)
+            if resultado.data:
+                exibir_popup("Sucesso", "Gasto salvo com sucesso!", tipo="sucesso")
+            else:
+                exibir_popup("Erro", "Falha ao salvar o gasto.", tipo="erro")
+
+        # Limpar campos e recarregar tabela
+        self.entry_valor.delete(0, tk.END)
+        self.entry_descricao.delete(0, tk.END)
+        self.valor_proposito.set("Selecione...")
+        self.carregar_gastos_mes()
 
     def apagar_gasto(self):
         item_selecionado = self.tabela.selection()
