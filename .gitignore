@@ -3,7 +3,7 @@ __pycache__
 *.pyc
 *.toc
 *.pkg
-*.txt
+txt
 *.html
 *.pyz
 *.pyc

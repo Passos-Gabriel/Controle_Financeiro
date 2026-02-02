@@ -1,0 +1,22 @@
+create table public.limites (
+  id bigint generated always as identity primary key,
+  valor_limite numeric not null,
+  mes_referencia text not null,
+  data_definicao timestamp with time zone default now()
+);
+
+create table public.gastos (
+  id bigint generated always as identity primary key,
+  valor numeric not null,
+  descricao text not null,
+  categoria text not null,
+  mes_referencia text not null,
+  created_at timestamp with time zone default now()
+);
+
+create table salarios (
+    id bigserial primary key,
+    valor_salario numeric(10,2) not null,
+    mes_referencia varchar(20) not null,
+    data_definicao timestamp with time zone default now()
+);
