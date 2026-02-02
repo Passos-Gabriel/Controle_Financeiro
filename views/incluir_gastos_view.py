@@ -144,7 +144,7 @@ class IncluirGastosView:
 
         total = 0.0
         for g in gastos:
-            data = g.get("data", "")[:10]
+            data = g.get("created_at", "")[:10]
             self.tabela.insert(
                 "", "end", iid=g["id"],  # <- usa o ID como identificador único
                 values=(data, g["descricao"], g["categoria"], f"{g['valor']:.2f}")

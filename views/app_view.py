@@ -7,7 +7,7 @@ from views.incluir_gastos_view import IncluirGastosView
 from views.relatorio_gastos_view import RelatorioGastosView
 from views.setar_valor_view import SetarValorView
 from controllers import limites_controller
-
+from controllers import salario_controller
 import locale
 try:
     locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
@@ -33,38 +33,88 @@ class AppView:
         frame.place(relx=0.5, rely=0.5, anchor="center")
 
         mes_atual = datetime.now().strftime("%B").capitalize()
-        saldo = limites_controller.obter_saldo_atual()
-        cor_saldo = "#7CFC00" if saldo >= 0 else "#FF4500"
+
+        # 🔹 SALDO LIMITE (canto superior direito)
+        saldo_limite = limites_controller.obter_saldo_atual()
+        cor_saldo = "#7CFC00" if saldo_limite >= 0 else "#FF4500"
 
         self.saldo_label = ttk.Label(
             self.root,
-            text=f"Saldo Atual ({mes_atual}): R$ {saldo:.2f}",
+            text=f"Saldo Atual ({mes_atual}): R$ {saldo_limite:.2f}",
             anchor="e",
             font=("Arial", 10, "bold"),
             foreground=cor_saldo
         )
         self.saldo_label.place(relx=1.0, x=-10, y=10, anchor="ne")
 
-        titulo = ttk.Label(frame, text="Menu Principal", font=("Arial", 16, "bold"))
-        titulo.pack(pady=(0, 30))
+        # 🔹 TÍTULO
+        titulo = ttk.Label(
+            frame,
+            text="Menu Principal",
+            font=("Arial", 16, "bold")
+        )
+        titulo.pack(pady=(0, 20))
 
-        self.btn_incluir = ttk.Button(frame, text="Incluir Gastos do Mês Atual", width=30, bootstyle="info-outline", command=self.abrir_incluir_gastos_view)
+        # 🔹 CRIA A LABEL DO SALÁRIO (ANTES DE CONFIGURAR)
+        self.label_saldo_salario = ttk.Label(
+            frame,
+            text="💰 Saldo disponível este mês: R$ 0.00",
+            font=("Arial", 13, "bold")
+        )
+        self.label_saldo_salario.pack(pady=(0, 30))
+
+        # 🔹 AGORA CALCULA E ATUALIZA
+        saldo_salario = salario_controller.calcular_saldo_salario_mes()
+        self.label_saldo_salario.config(
+            text=f"💰 Saldo disponível este mês: R$ {saldo_salario:.2f}"
+        )
+
+        self.btn_salario = ttk.Button(
+            frame,
+            text="💼 Setar / Atualizar Salário",
+            width=30,
+            bootstyle="success-outline",
+            command=self.abrir_setar_salario_view
+        )
+        self.btn_salario.pack(pady=(0, 25))
+
+
+        # 🔹 BOTÕES
+        self.btn_incluir = ttk.Button(
+            frame,
+            text="Incluir Gastos do Mês Atual",
+            width=30,
+            bootstyle="info-outline",
+            command=self.abrir_incluir_gastos_view
+        )
         self.btn_incluir.pack(pady=10)
 
-        self.btn_relatorio = ttk.Button(frame, text="Ver Relatório de Gastos", width=30, bootstyle="info-outline", command=self.abrir_relatorio_gastos_view)
+        self.btn_relatorio = ttk.Button(
+            frame,
+            text="Ver Relatório de Gastos",
+            width=30,
+            bootstyle="info-outline",
+            command=self.abrir_relatorio_gastos_view
+        )
         self.btn_relatorio.pack(pady=10)
 
-        self.btn_limite = ttk.Button(frame, text="Inserir Limite para Gasto", width=30, bootstyle="info-outline", command=self.abrir_setar_valor_view)
+        self.btn_limite = ttk.Button(
+            frame,
+            text="Inserir Limite para Gasto",
+            width=30,
+            bootstyle="info-outline",
+            command=self.abrir_setar_valor_view
+        )
         self.btn_limite.pack(pady=10)
 
-        # Rodapé
+        # 🔹 RODAPÉ
         rodape = ttk.Label(
             self.root,
             text="Created by Gabriel Passos\nEmail: bielpassos@hotmail.com",
             font=("Arial", 9),
             justify="center"
         )
-        rodape.place(relx=0.5, rely=1.0, anchor="s", y=-10)  # y=-10 para dar um respiro do fim da janela
+        rodape.place(relx=0.5, rely=1.0, anchor="s", y=-10)
 
     def abrir_incluir_gastos_view(self):
         for widget in self.root.winfo_children():
@@ -80,6 +130,13 @@ class AppView:
         for widget in self.root.winfo_children():
             widget.destroy()
         SetarValorView(self.root, self.mostrar_tela_principal)
+        
+    def abrir_setar_salario_view(self):
+        for widget in self.root.winfo_children():
+            widget.destroy()
+        from views.setar_salario_view import SetarSalarioView
+        SetarSalarioView(self.root, self.mostrar_tela_principal)
+
 
     def centralizar_janela(self, largura=750, altura=600):
         largura_tela = self.root.winfo_screenwidth()

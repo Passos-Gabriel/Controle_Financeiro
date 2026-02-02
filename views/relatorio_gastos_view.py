@@ -101,7 +101,7 @@ class RelatorioGastosView:
             if categoria != "Todas" and g["categoria"] != categoria:
                 continue
 
-            data_gasto = g.get("data", "")[:10]
+            data_gasto = g.get("created_at", "")[:10]
             if data_inicio and data_gasto < data_inicio:
                 continue
             if data_fim and data_gasto > data_fim:
